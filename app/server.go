@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
-	// Uncomment this block to pass the first stage
 	"net"
 	"os"
+	"strings"
 )
+
+const VERSION = "HTTP/1.1"
+const CLRF = "\r\n"
 
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -19,12 +22,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	conn, err := l.Accept()
+	for {
+		conn, err := l.Accept()
 
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+
+		for {
+			buf := make([]byte, 1024)
+			_, err := conn.Read(buf)
+			if err != nil {
+				fmt.Println("Error reading data: ", err.Error())
+				break
+			}
+			splitStr := strings.Split((string(buf)), CLRF)
+			if splitStr[0] == "GET / HTTP/1.1" {
+				conn.Write([]byte(VERSION + " 200 OK" + CLRF + CLRF))
+			} else {
+				conn.Write([]byte(VERSION + " 404 Not Found" + CLRF + CLRF))
+			}
+		}
+		conn.Close()
 	}
-
-	conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
 }
