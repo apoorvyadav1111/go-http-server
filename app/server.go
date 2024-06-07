@@ -96,7 +96,9 @@ func handleConnection(conn net.Conn) {
 			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
 			value, ok := request_headers["Accept-Encoding"]
 			if ok {
-				headers += fmt.Sprintf("Content-Encoding: %s", value) + CLRF
+				if value != "invalid-encoding" {
+					headers += "Content-Encoding: " + value + CLRF
+				}
 			}
 			headers += CLRF
 			response := fmt.Sprintf("%s%s%s", status, headers, message)
