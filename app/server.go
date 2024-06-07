@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"net"
@@ -104,14 +106,25 @@ func handleConnection(conn net.Conn) {
 			status := VERSION + " 200 OK" + CLRF
 			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
 			value, ok := request_headers["Accept-Encoding"]
+			compress := false
 			if ok {
 				if value != "invalid-encoding" {
 					headers += "Content-Encoding: " + value + CLRF
+					compress = true
 				}
 			}
 			headers += CLRF
-			response := fmt.Sprintf("%s%s%s", status, headers, message)
-			conn.Write([]byte(response))
+			if compress {
+				var buf bytes.Buffer
+				gzipWriter := gzip.NewWriter(&buf)
+				gzipWriter.Write([]byte(message))
+				gzipWriter.Close()
+				response := fmt.Sprintf("%s%s%s", status, headers, buf.Bytes())
+				conn.Write([]byte(response))
+			} else {
+				response := fmt.Sprintf("%s%s%s", status, headers, message)
+				conn.Write([]byte(response))
+			}
 		} else if strings.Split(url, "/")[1] == "user-agent" {
 			user_agent := request_headers["User-Agent"]
 			status := VERSION + " 200 OK" + CLRF
