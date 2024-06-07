@@ -30,20 +30,41 @@ func main() {
 			os.Exit(1)
 		}
 
-		for {
-			buf := make([]byte, 1024)
-			_, err := conn.Read(buf)
-			if err != nil {
-				fmt.Println("Error reading data: ", err.Error())
-				break
-			}
-			splitStr := strings.Split((string(buf)), CLRF)
-			if splitStr[0] == "GET / HTTP/1.1" {
-				conn.Write([]byte(VERSION + " 200 OK" + CLRF + CLRF))
-			} else {
-				conn.Write([]byte(VERSION + " 404 Not Found" + CLRF + CLRF))
-			}
+		go handleConnection(conn)
+
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	// Implement this function
+	defer conn.Close()
+	for {
+		buf := make([]byte, 1024)
+		n, err := conn.Read(buf)
+		if err != nil {
+			fmt.Println("Error reading data: ", err.Error())
+			break
 		}
-		conn.Close()
+		request := string(buf[:n])
+		splitStr := strings.Split(request, CLRF)
+		request_url_tokens := strings.Split(splitStr[0], " ")
+		method := request_url_tokens[0]
+		url := request_url_tokens[1]
+
+		if method == "GET" {
+			if url == "/" {
+				response := VERSION + " 200 OK" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>Hello, World!</h1>"
+				conn.Write([]byte(response))
+			} else if strings.Split(url, "/")[1] == "echo" {
+				response := VERSION + " 200 OK" + CLRF + "Content-Type: text/plain" + CLRF + CLRF + strings.Split(url, "/")[2]
+				conn.Write([]byte(response))
+			} else {
+				response := VERSION + " 404 Not Found" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>404 Not Found</h1>"
+				conn.Write([]byte(response))
+			}
+		} else {
+			response := VERSION + " 405 Method Not Allowed" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>405 Method Not Allowed</h1>"
+			conn.Write([]byte(response))
+		}
 	}
 }
