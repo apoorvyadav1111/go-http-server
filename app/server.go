@@ -104,7 +104,7 @@ func handleConnection(conn net.Conn) {
 		} else if strings.Split(url, "/")[1] == "echo" {
 			message := strings.Split(url, "/")[2]
 			status := VERSION + " 200 OK" + CLRF
-			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
+			headers := "Content-Type: text/plain" + CLRF
 			value, ok := request_headers["Accept-Encoding"]
 			compress := false
 			if ok {
@@ -120,12 +120,12 @@ func handleConnection(conn net.Conn) {
 				gzipWriter := gzip.NewWriter(&buf)
 				gzipWriter.Write([]byte(message))
 				gzipWriter.Close()
-				response := fmt.Sprintf("%s%s%s", status, headers, buf.String())
-				conn.Write([]byte(response))
-			} else {
-				response := fmt.Sprintf("%s%s%s", status, headers, message)
-				conn.Write([]byte(response))
+				message = buf.String()
 			}
+			headers += fmt.Sprintf("Content-Length: %d", len(message)) + CLRF + CLRF
+			response := fmt.Sprintf("%s%s%s", status, headers, message)
+			conn.Write([]byte(response))
+
 		} else if strings.Split(url, "/")[1] == "user-agent" {
 			user_agent := request_headers["User-Agent"]
 			status := VERSION + " 200 OK" + CLRF
