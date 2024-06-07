@@ -113,7 +113,6 @@ func handleConnection(conn net.Conn) {
 					compress = true
 				}
 			}
-			headers += CLRF
 
 			if compress {
 				var buf bytes.Buffer
