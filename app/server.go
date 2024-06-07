@@ -114,12 +114,13 @@ func handleConnection(conn net.Conn) {
 				}
 			}
 			headers += CLRF
+
 			if compress {
 				var buf bytes.Buffer
 				gzipWriter := gzip.NewWriter(&buf)
 				gzipWriter.Write([]byte(message))
 				gzipWriter.Close()
-				response := fmt.Sprintf("%s%s%s", status, headers, buf.Bytes())
+				response := fmt.Sprintf("%s%s%s", status, headers, buf.String())
 				conn.Write([]byte(response))
 			} else {
 				response := fmt.Sprintf("%s%s%s", status, headers, message)
