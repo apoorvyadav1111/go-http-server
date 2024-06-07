@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -13,6 +14,14 @@ const CLRF = "\r\n"
 func main() {
 	// You can use print statements as follows for debugging, they'll be visible when running tests.
 	fmt.Println("Logs from your program will appear here!")
+
+	directory := flag.String("directory", ".", "Directory to serve files from")
+
+	flag.Parse()
+
+	if *directory != "" {
+		os.Chdir(*directory)
+	}
 
 	// Uncomment this block to pass the first stage
 
