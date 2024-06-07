@@ -53,8 +53,8 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Error reading data: ", err.Error())
 	}
 	request := string(buf[:n])
-	request_url := request[:(string.Index(request, CLRF))]
-	request_body_and_header := request[(string.Index(request, CLRF) + 2):]
+	request_url := request[:(strings.Index(request, CLRF))]
+	request_body_and_header := request[(strings.Index(request, CLRF) + 2):]
 	request_body_and_header_tokens := strings.Split(request_body_and_header, CLRF+CLRF)
 	headers := strings.Split(request_body_and_header_tokens[0], CLRF)
 	body := request_body_and_header_tokens[1]
