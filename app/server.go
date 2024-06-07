@@ -115,7 +115,7 @@ func handleConnection(conn net.Conn) {
 				conn.Write([]byte(response))
 			} else {
 				file.Write([]byte(body))
-				response := VERSION + " 200 OK" + CLRF + CLRF
+				response := VERSION + " 201 OK" + CLRF + CLRF
 				conn.Write([]byte(response))
 			}
 		}
