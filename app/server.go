@@ -73,6 +73,21 @@ func handleConnection(conn net.Conn) {
 			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(user_agent)) + CLRF + CLRF
 			response := fmt.Sprintf("%s%s%s", status, headers, user_agent)
 			conn.Write([]byte(response))
+		} else if strings.Split(url, "/")[1] == "files" {
+			file_name := strings.Split(url, "/")[2]
+			file, err := os.Open(file_name)
+			if err != nil {
+				response := VERSION + " 404 Not Found" + CLRF + CLRF
+				conn.Write([]byte(response))
+			} else {
+				status := VERSION + " 200 OK" + CLRF
+				headers := "Content-Type: application/octet-stream" + CLRF
+				file_info, _ := file.Stat()
+				file_size := file_info.Size()
+				headers += fmt.Sprintf("Content-Length: %d", file_size) + CLRF + CLRF
+				response := fmt.Sprintf("%s%s%s", status, headers, file)
+				conn.Write([]byte(response))
+			}
 		} else {
 			response := VERSION + " 404 Not Found" + CLRF + CLRF
 			conn.Write([]byte(response))
