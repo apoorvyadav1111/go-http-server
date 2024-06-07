@@ -53,13 +53,13 @@ func handleConnection(conn net.Conn) {
 
 		if method == "GET" {
 			if url == "/" {
-				response := VERSION + " 200 OK" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>Hello, World!</h1>"
+				response := VERSION + " 200 OK" + CLRF + CLRF
 				conn.Write([]byte(response))
 			} else if strings.Split(url, "/")[1] == "echo" {
-				response := VERSION + " 200 OK" + CLRF + "Content-Type: text/plain" + CLRF + CLRF + strings.Split(url, "/")[2]
+				response := VERSION + " 200 OK" + CLRF + "Content-Type: text/plain" + CLRF + "Content-Length:" + string(len(strings.Split(url, "/")[2])) + CLRF + strings.Split(url, "/")[2]
 				conn.Write([]byte(response))
 			} else {
-				response := VERSION + " 404 Not Found" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>404 Not Found</h1>"
+				response := VERSION + " 404 Not Found" + CLRF + CLRF
 				conn.Write([]byte(response))
 			}
 		} else {
