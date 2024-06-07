@@ -82,7 +82,19 @@ func handleConnection(conn net.Conn) {
 	for _, header := range headers {
 		if strings.TrimSpace(header) != "" {
 			header_tokens := strings.Split(header, ": ")
-			request_headers[header_tokens[0]] = header_tokens[1]
+			if header_tokens[0] == "Accept-Encoding" {
+				encodings := strings.Split(header_tokens[1], ", ")
+				for _, encoding := range encodings {
+					if encoding != "gzip" && encoding != "deflate" {
+						request_headers["Accept-Encoding"] = "invalid-encoding"
+						break
+					} else {
+						request_headers["Accept-Encoding"] = encoding
+					}
+				}
+			} else {
+				request_headers[header_tokens[0]] = header_tokens[1]
+			}
 		}
 	}
 
