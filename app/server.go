@@ -42,7 +42,6 @@ func handleConnection(conn net.Conn) {
 	n, err := conn.Read(buf)
 	if err != nil {
 		fmt.Println("Error reading data: ", err.Error())
-		break
 	}
 	request := string(buf[:n])
 	splitStr := strings.Split(request, CLRF)
