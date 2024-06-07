@@ -52,15 +52,39 @@ func handleConnection(conn net.Conn) {
 	if err != nil {
 		fmt.Println("Error reading data: ", err.Error())
 	}
+	// Getting the request
 	request := string(buf[:n])
+
+	// getting the url of the request, reading until the first CLRF
 	request_url := request[:(strings.Index(request, CLRF))]
+
+	// getting the body and headers of the request
 	request_body_and_header := request[(strings.Index(request, CLRF) + 2):]
+
+	// splitting the body and headers using CLRF+CLRF
 	request_body_and_header_tokens := strings.Split(request_body_and_header, CLRF+CLRF)
+
+	// splitting the headers using CLRF
 	headers := strings.Split(request_body_and_header_tokens[0], CLRF)
+
+	// getting the body of the request
 	body := request_body_and_header_tokens[1]
+
+	// splitting the url to get the method and the url
 	request_url_tokens := strings.Split(request_url, " ")
+
+	// getting the method and the url
 	method := request_url_tokens[0]
 	url := request_url_tokens[1]
+
+	// request headers
+	request_headers := make(map[string]string)
+	for _, header := range headers {
+		if strings.TrimSpace(header) != "" {
+			header_tokens := strings.Split(header, ": ")
+			request_headers[header_tokens[0]] = header_tokens[1]
+		}
+	}
 
 	if method == "GET" {
 		if url == "/" {
@@ -69,18 +93,16 @@ func handleConnection(conn net.Conn) {
 		} else if strings.Split(url, "/")[1] == "echo" {
 			message := strings.Split(url, "/")[2]
 			status := VERSION + " 200 OK" + CLRF
-			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF + CLRF
+			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
+			value, ok := request_headers["Accept-Encoding"]
+			if ok {
+				headers += fmt.Sprintf("Content-Encoding: %s", value) + CLRF
+			}
+			headers += CLRF
 			response := fmt.Sprintf("%s%s%s", status, headers, message)
 			conn.Write([]byte(response))
 		} else if strings.Split(url, "/")[1] == "user-agent" {
-			map_headers := make(map[string]string)
-			for _, header := range headers {
-				if strings.TrimSpace(header) != "" {
-					header_tokens := strings.Split(header, ": ")
-					map_headers[header_tokens[0]] = header_tokens[1]
-				}
-			}
-			user_agent := map_headers["User-Agent"]
+			user_agent := request_headers["User-Agent"]
 			status := VERSION + " 200 OK" + CLRF
 			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(user_agent)) + CLRF + CLRF
 			response := fmt.Sprintf("%s%s%s", status, headers, user_agent)
