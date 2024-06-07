@@ -53,11 +53,15 @@ func handleConnection(conn net.Conn) {
 		fmt.Println("Error reading data: ", err.Error())
 	}
 	request := string(buf[:n])
-	splitStr := strings.Split(request, CLRF)
-	request_url_tokens := strings.Split(splitStr[0], " ")
+	request_url := request[:(string.Index(request, CLRF))]
+	request_body_and_header := request[(string.Index(request, CLRF)+2):]
+	request_body_and_header_tokens:= strings.Split(request_body_and_header, CLRF+CLRF)
+	headers := strings.Split(request_body_and_header_tokens[0], CLRF)
+	body := request_body_and_header_tokens[1]
+	request_url_tokens := strings.Split(request_url, " ")
 	method := request_url_tokens[0]
 	url := request_url_tokens[1]
-	headers := splitStr[1:]
+
 
 	if method == "GET" {
 		if url == "/" {
@@ -103,8 +107,20 @@ func handleConnection(conn net.Conn) {
 			response := VERSION + " 404 Not Found" + CLRF + CLRF
 			conn.Write([]byte(response))
 		}
+	} else if method == "POST" {
+		if strings.Split(url, "/")[1] == "files" {
+			file_name := strings.Split(url, "/")[2]
+			file, err := os.Create(file_name)
+			if err != nil {
+				response := VERSION + "500 Internal Server Error" + CLRF + CLRF
+				conn.Write([]byte(response))
+			} else {
+
+		}
+
 	} else {
-		response := VERSION + " 405 Method Not Allowed" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>405 Method Not Allowed</h1>"
+		response := VERSION + " 405 Method Not Allowed" + CLRF + CLRF
 		conn.Write([]byte(response))
 	}
+
 }
