@@ -94,7 +94,9 @@ func handleConnection(conn net.Conn) {
 				file_info, _ := file.Stat()
 				file_size := file_info.Size()
 				headers += fmt.Sprintf("Content-Length: %d", file_size) + CLRF + CLRF
-				response := fmt.Sprintf("%s%s%s", status, headers, file)
+				buf := make([]byte, file_size)
+				file.Read(buf)
+				response := fmt.Sprintf("%s%s%s", status, headers, buf)
 				conn.Write([]byte(response))
 			}
 		} else {
