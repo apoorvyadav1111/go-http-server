@@ -73,6 +73,9 @@ func handleConnection(conn net.Conn) {
 			headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(user_agent)) + CLRF + CLRF
 			response := fmt.Sprintf("%s%s%s", status, headers, user_agent)
 			conn.Write([]byte(response))
+		} else {
+			response := VERSION + " 404 Not Found" + CLRF + CLRF
+			conn.Write([]byte(response))
 		}
 	} else {
 		response := VERSION + " 405 Method Not Allowed" + CLRF + "Content-Type: text/html" + CLRF + CLRF + "<h1>405 Method Not Allowed</h1>"
