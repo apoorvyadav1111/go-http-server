@@ -58,7 +58,7 @@ func handleConnection(conn net.Conn) {
 			} else if strings.Split(url, "/")[1] == "echo" {
 				message := strings.Split(url, "/")[2]
 				status := VERSION + " 200 OK" + CLRF
-				headers := "Content-Type: text/plain" + CLRF + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
+				headers := "Content-Type: text/plain" + CLRF + fmt.Sprintf("Content-Length: %d", len(message)) + CLRF
 				response := fmt.Sprintf("%s%s%s", status, headers, message)
 				conn.Write([]byte(response))
 			} else {
